@@ -13,6 +13,10 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 class CelltrakRedisConfiguration implements ConfigurationInterface
 {
 
+    const DEFAULT_REDIS_PORT = 6379;
+
+
+
     public function getConfigTreeBuilder()
     {
         $tb = new TreeBuilder();
@@ -32,7 +36,34 @@ class CelltrakRedisConfiguration implements ConfigurationInterface
         $node = $tb->root('clients');
 
         $node
-            ->prototype('scalar')->end()
+            ->useAttributeAsKey('name')
+            ->prototype('array')
+                ->children()
+                    ->scalarNode('host')
+                        ->isRequired()
+                    ->end()
+                    ->integerNode('port')
+                        ->defaultValue(self::DEFAULT_REDIS_PORT)
+                        ->min(1)
+                    ->end()
+                    ->scalarNode('auth')
+                        ->defaultNull()
+                    ->end()
+                    ->integerNode('database')
+                        ->defaultValue(1)
+                        ->min(1)
+                    ->end()
+                    ->integerNode('timeout')
+                        ->defaultValue(0)
+                        ->min(0)
+                    ->end()
+                    ->scalarNode('key_prefix')
+                        ->defaultNull()
+                    ->end()
+                    ->booleanNode('scan_retry')
+                        ->defaultTrue()
+                    ->end()
+                ->end()
             ->end()
         ->end();
 

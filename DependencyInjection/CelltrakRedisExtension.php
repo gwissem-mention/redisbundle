@@ -17,7 +17,61 @@ class CelltrakRedisExtension extends Extension
         $config         = $processor
                             ->processConfiguration($configSchema, $configs);
 
-        var_dump($config);
+        $clients = $config['clients'];
+        $this->initializeClients($clients, $container);
+    }
+
+    protected function initializeClients(
+        array $clients,
+        ContainerBuilder $container
+    ) {
+        $redisClass = 'Redis';
+
+        foreach ($clients as $clientName => $clientParams) {
+            $serviceId = "celltrak_redis.{$clientName}";
+            $alias = "{$clientName}_celltrak_redis";
+
+            $def = new Definition($redisClass);
+            $container->setDefinition($serviceId, $def);
+            $container->setAlias($alias, $serviceId);
+
+            $args = [
+                $clientParams['host'],
+                $clientParams['port'],
+                $clientParams['timeout']
+            ];
+            $def->addMethodCall('connect', $args);
+
+            if ($clientParams['auth']) {
+                $args = [
+                    $clientParams['auth']
+                ];
+                $def->addMethodCall('auth', $args);
+            }
+
+            if ($clientParams['database'] != 1) {
+                $args = [
+                    $clientParams['database']
+                ];
+                $def->addMethodCall('select', $args);
+            }
+
+            if ($clientParams['key_prefix']) {
+                $args = [
+                    \Redis::OPT_PREFIX,
+                    $clientParams['key_prefix']
+                ];
+                $def->addMethodCall('setOption', $args);
+            }
+
+            if ($clientParams['scan_retry']) {
+                $args = [
+                    \Redis::OPT_SCAN,
+                    \Redis::SCAN_RETRY
+                ];
+                $def->addMethodCall('setOption', $args);
+            }
+        }
     }
 
 }
