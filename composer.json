@@ -1,0 +1,19 @@
+{
+    "name": "celltrak/redis-bundle",
+    "type": "symfony-bundle",
+    "description": "A Redis bundle for Symfony2",
+    "keywords": ["redis", "symfony"],
+    "authors": [
+        {
+            "name": "Mike Turoff",
+            "email": "mturoff@celltrak.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "symfony/framework-bundle": "^2.1"
+    },
+    "autoload": {
+        "psr-4": { "Celltrak\\RedisBundle\\": "" }
+    }
+}
