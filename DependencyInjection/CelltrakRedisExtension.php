@@ -25,7 +25,7 @@ class CelltrakRedisExtension extends Extension
         array $clients,
         ContainerBuilder $container
     ) {
-        $redisClass = 'Redis';
+        $redisClass = 'Celltrak\RedisBundle\Component\Client\CelltrakRedis';
 
         foreach ($clients as $clientName => $clientParams) {
             $serviceId = "celltrak_redis.{$clientName}";
