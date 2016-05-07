@@ -3,13 +3,26 @@ namespace Celltrak\RedisBundle\Component\Client;
 
 use Celltrak\RedisBundle\Exception\RedisScriptException;
 
-
+/**
+ * Custom wrapper to the PHP Redis client for the purpose of adding convenience
+ * methods.
+ *
+ * See https://pecl.php.net/package/redis for more information on the "standard"
+ * PHP Redis client.
+ *
+ * @author Mike Turoff
+ */
 class CelltrakRedis extends \Redis
 {
 
 
     /**
-     * Runs the Lua script.
+     * Employs Redis to eval passed Lua script.
+     *
+     * NOTE: runScript is a convenience method for first attempting to evalSha
+     * the script. If the script isn't loaded, it will then call eval. Also,
+     * this method attempts to ease running a script by separating the keys and
+     * other script arguments into two separate method arguments.
      *
      * @param string $script
      * @param array $keys       Enumerated array of Redis keys referenced by the
@@ -21,7 +34,7 @@ class CelltrakRedis extends \Redis
      */
     public function runScript($script, array $keys = [], array $args = [])
     {
-        $scriptSha = $this->getScriptSha($script);
+        $scriptSha = sha1($script);
         $numKeys = count($keys);
 
         if ($numKeys && ($prefix = $this->getOption(\Redis::OPT_PREFIX))) {
@@ -34,8 +47,6 @@ class CelltrakRedis extends \Redis
         }
 
         $allArgs = array_merge($keys, $args);
-
-        $this->clearLastError();
 
         $result = $this->evalSha($scriptSha, $allArgs, $numKeys);
 
@@ -60,25 +71,13 @@ class CelltrakRedis extends \Redis
     }
 
     /**
-     * Returns script's SHA.
-     * @param string $script
-     * @return string
-     */
-    protected function getScriptSha($script)
-    {
-        return sha1($script);
-    }
-
-    /**
      * Indicates whether a missing script error was just triggered.
      * @return boolean
      */
-    protected function triggeredMissingScriptError()
+    public function triggeredMissingScriptError()
     {
         $error = $this->getLastError();
         return $error && strpos($error, 'NOSCRIPT') !== false;
     }
-
-
 
 }
