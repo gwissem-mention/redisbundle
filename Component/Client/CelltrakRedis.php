@@ -80,4 +80,19 @@ class CelltrakRedis extends \Redis
         return $error && strpos($error, 'NOSCRIPT') !== false;
     }
 
+    /**
+     * Using Redis SCAN to return keys matching specified pattern.
+     * @param string $pattern
+     * @return array
+     */
+    public function scanForKeys($pattern)
+    {
+        $keys = [];
+        $iterator = null;
+        while ($cursorKeys = $this->scan($iterator, $pattern)) {
+            $keys = array_merge($keys, $cursorKeys);
+        }
+        return $keys;
+    }
+
 }
